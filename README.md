@@ -81,8 +81,9 @@ The addon searches for:
 | `CF_PROXY_URL` | No | Cloudflare Worker base URL. When set, stream URLs point at the worker instead of the Google API directly. |
 | `MAX_TITLES` | No | Max number of IMDb aka titles to query per request (default `60`). Lower it if you hit Vercel timeouts. |
 
-The addon now uses Python 3.12 on Vercel. No `vercel.json` build/route overrides are
-needed: Vercel detects the Flask `app` in `index.py` automatically.
+The addon now uses Python 3.12 on Vercel. `vercel.json` explicitly builds
+`index.py` with `@vercel/python` so the browser shows the Flask routes (opening
+the site should display `Addon is alive.`) instead of downloading the source file.
 
 ## Reliability fixes in this version
 
