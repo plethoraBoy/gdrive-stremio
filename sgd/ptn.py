@@ -3,7 +3,10 @@ import PTN
 
 class parse_title:
     def __init__(self, name):
-        ptn_dict = PTN.parse(name)
+        try:
+            ptn_dict = PTN.parse(str(name or "")) or {}
+        except Exception:
+            ptn_dict = {}
         key_list = [
             "resolution",
             "codec",
@@ -28,14 +31,14 @@ class parse_title:
             "se": self.season,
             "ep": self.episode,
             "res": self.resolution,
-            "title": self.title,
-            "year": self.year,
+            "title": self.title or "",
+            "year": str(self.year) if self.year else "",
         }
 
     def get_val(self, x, y):
         formatted = ""
 
-        for word in x.split(y):
+        for word in str(x or "").split(y):
             if len(word) and word[0] == "%":
                 string = getattr(self, word[1:], "")
                 if string:

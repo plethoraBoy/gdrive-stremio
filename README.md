@@ -73,4 +73,48 @@ The addon searches for:
     * 1x01
     * 1x1
 
+## Configuration
+
+| Variable | Required | Purpose |
+| --- | --- | --- |
+| `TOKEN` | Yes | The JSON credentials object from the Colab notebook (same value as before). |
+| `CF_PROXY_URL` | No | Cloudflare Worker base URL. When set, stream URLs point at the worker instead of the Google API directly. |
+| `MAX_TITLES` | No | Max number of IMDb aka titles to query per request (default `60`). Lower it if you hit Vercel timeouts. |
+
+The addon now uses Python 3.12 on Vercel. No `vercel.json` build/route overrides are
+needed: Vercel detects the Flask `app` in `index.py` automatically.
+
+## Reliability fixes in this version
+
+* **Series IDs** work whether Stremio sends `tt123:1:2` or `tt123%3A1%3A2`.
+* **Search queries** escape apostrophes/backslashes in titles, skip empty words,
+  and never inject the literal string `None` for movies without a year.
+* **Drive API calls** retry on auth/rate-limit/server errors, refresh expired OAuth
+  tokens automatically, and follow `nextPageToken` for folders with >1000 results.
+* **Partial batch failures** no longer discard the whole search; successful
+  queries are kept and only failed ones are retried.
+* **Missing metadata** (no `size`, `md5Checksum`, `name` or drive name) no longer
+  crashes deduping, sorting or stream construction.
+* **Caches** are stored in the OS temp directory, survive corrupt files, and are
+  written atomically so concurrent serverless workers cannot truncate them.
+* **Metadata lookups** fall back IMDb HTML → IMDb suggestions → Cinemeta without
+  letting a malformed page raise an exception.
+* **Every stream response is valid JSON**: errors now return `{"streams":[]}`
+  instead of a truncated/half-written response that Stremio reports as a failure.
+
+## Local development
+
+```bash
+python -m venv venv
+venv\Scripts\pip install -r requirements.txt   # Windows
+set TOKEN={"token":"...","refresh_token":"...",...}
+python index.py                                # or: flask --app index run
+```
+
+Run the offline regression tests with:
+
+```bash
+python -m unittest discover -s tests -v
+```
+
 
